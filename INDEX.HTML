@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Media Detector</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        min-height: 100vh;
+        background: #0b1020;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 25px;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 850px;
+        background: #121a30;
+        border: 1px solid #293557;
+        border-radius: 22px;
+        padding: 35px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 38px;
+        margin-bottom: 10px;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: #9da8c7;
+        margin-bottom: 30px;
+    }
+
+    .upload-box {
+        border: 2px dashed #4c6fff;
+        border-radius: 18px;
+        padding: 50px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.25s;
+        background: rgba(76,111,255,0.05);
+    }
+
+    .upload-box:hover {
+        background: rgba(76,111,255,0.12);
+        transform: translateY(-2px);
+    }
+
+    .upload-icon {
+        font-size: 55px;
+        margin-bottom: 15px;
+    }
+
+    .upload-box h2 {
+        margin-bottom: 10px;
+    }
+
+    .upload-box p {
+        color: #9da8c7;
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+
+    .preview {
+        margin-top: 25px;
+        display: none;
+        text-align: center;
+    }
+
+    .preview img,
+    .preview video {
+        max-width: 100%;
+        max-height: 350px;
+        border-radius: 15px;
+        border: 1px solid #354267;
+    }
+
+    .file-name {
+        margin-top: 12px;
+        color: #b7c2e0;
+    }
+
+    .analyze-btn {
+        width: 100%;
+        margin-top: 25px;
+        padding: 16px;
+        border: none;
+        border-radius: 12px;
+        background: #4c6fff;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+        display: none;
+    }
+
+    .analyze-btn:hover {
+        background: #395be0;
+    }
+
+    .loading {
+        display: none;
+        text-align: center;
+        margin-top: 25px;
+    }
+
+    .spinner {
+        width: 45px;
+        height: 45px;
+        border: 4px solid #293557;
+        border-top: 4px solid #4c6fff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: auto auto 15px;
+    }
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .result {
+        display: none;
+        margin-top: 30px;
+        padding: 25px;
+        background: #0d1427;
+        border-radius: 18px;
+        border: 1px solid #293557;
+    }
+
+    .result-title {
+        text-align: center;
+        font-size: 28px;
+        margin-bottom: 25px;
+    }
+
+    .probability {
+        text-align: center;
+        font-size: 55px;
+        font-weight: bold;
+        color: #ff5964;
+        margin-bottom: 5px;
+    }
+
+    .label {
+        text-align: center;
+        color: #9da8c7;
+        margin-bottom: 25px;
+    }
+
+    .bar {
+        width: 100%;
+        height: 15px;
+        background: #293557;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .bar-fill {
+        width: 0%;
+        height: 100%;
+        background: #ff5964;
+        transition: width 1s ease;
+    }
+
+    .evidence {
+        margin-top: 25px;
+    }
+
+    .evidence h3 {
+        margin-bottom: 15px;
+    }
+
+    .evidence-item {
+        padding: 13px;
+        margin-bottom: 8px;
+        background: #151e36;
+        border-radius: 10px;
+        color: #c5cce0;
+    }
+
+    .disclaimer {
+        margin-top: 20px;
+        color: #777f99;
+        font-size: 12px;
+        text-align: center;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🔬 AI Media Detector</h1>
+
+    <p class="subtitle">
+        Detect whether an image or video may have been generated or manipulated by AI.
+    </p>
+
+    <label class="upload-box" for="fileInput">
+        <div class="upload-icon">📷</div>
+
+        <h2>Upload Image or Video</h2>
+
+        <p>Click here to select a file</p>
+        <p>JPG, PNG, WEBP, MP4, MOV</p>
+    </label>
+
+    <input
+        type="file"
+        id="fileInput"
+        accept="image/*,video/*"
+    >
+
+    <div class="preview" id="preview">
+        <div id="mediaContainer"></div>
+        <div class="file-name" id="fileName"></div>
+    </div>
+
+    <button class="analyze-btn" id="analyzeBtn">
+        🔍 Analyze Media
+    </button>
+
+    <div class="loading" id="loading">
+
+        <div class="spinner"></div>
+
+        <p id="loadingText">
+            Analyzing media...
+        </p>
+
+    </div>
+
+    <div class="result" id="result">
+
+        <div class="result-title">
+            Analysis Result
+        </div>
+
+        <div class="probability" id="probability">
+            87%
+        </div>
+
+        <div class="label">
+            Estimated probability of AI generation
+        </div>
+
+        <div class="bar">
+            <div class="bar-fill" id="barFill"></div>
+        </div>
+
+        <div class="evidence">
+
+            <h3>🔬 Detected Signals</h3>
+
+            <div class="evidence-item">
+                ✓ Synthetic texture patterns detected
+            </div>
+
+            <div class="evidence-item">
+                ✓ Image-frequency anomaly detected
+            </div>
+
+            <div class="evidence-item">
+                ✓ Unusual facial-region patterns
+            </div>
+
+            <div class="evidence-item">
+                ⚠ Metadata unavailable
+            </div>
+
+        </div>
+
+        <p class="disclaimer">
+            Demo result only. This interface is not connected to a real AI detection model yet.
+        </p>
+
+    </div>
+
+</div>
+
+<script>
+
+const fileInput = document.getElementById("fileInput");
+const preview = document.getElementById("preview");
+const mediaContainer = document.getElementById("mediaContainer");
+const fileName = document.getElementById("fileName");
+
+const analyzeBtn = document.getElementById("analyzeBtn");
+const loading = document.getElementById("loading");
+const result = document.getElementById("result");
+
+const probability = document.getElementById("probability");
+const barFill = document.getElementById("barFill");
+
+fileInput.addEventListener("change", function() {
+
+    const file = this.files[0];
+
+    if (!file) return;
+
+    preview.style.display = "block";
+    analyzeBtn.style.display = "block";
+    result.style.display = "none";
+
+    fileName.textContent =
+        file.name + " • " +
+        (file.size / 1024 / 1024).toFixed(2) +
+        " MB";
+
+    mediaContainer.innerHTML = "";
+
+    const url = URL.createObjectURL(file);
+
+    if (file.type.startsWith("image/")) {
+
+        const img = document.createElement("img");
+
+        img.src = url;
+
+        mediaContainer.appendChild(img);
+
+    } else if (file.type.startsWith("video/")) {
+
+        const video = document.createElement("video");
+
+        video.src = url;
+        video.controls = true;
+
+        mediaContainer.appendChild(video);
+    }
+
+});
+
+
+analyzeBtn.addEventListener("click", function() {
+
+    analyzeBtn.style.display = "none";
+    result.style.display = "none";
+    loading.style.display = "block";
+
+    const loadingText =
+        document.getElementById("loadingText");
+
+    const messages = [
+        "Reading media...",
+        "Extracting visual features...",
+        "Checking image artifacts...",
+        "Analyzing patterns...",
+        "Calculating probability..."
+    ];
+
+    let i = 0;
+
+    const interval = setInterval(() => {
+
+        loadingText.textContent = messages[i];
+
+        i++;
+
+        if (i >= messages.length) {
+            clearInterval(interval);
+        }
+
+    }, 500);
+
+
+    setTimeout(() => {
+
+        loading.style.display = "none";
+        result.style.display = "block";
+
+        // DEMO VALUE
+        const demoProbability = 87;
+
+        probability.textContent =
+            demoProbability + "%";
+
+        setTimeout(() => {
+            barFill.style.width =
+                demoProbability + "%";
+        }, 100);
+
+    }, 3000);
+
+});
+
+</script>
+
+</body>
+</html>
