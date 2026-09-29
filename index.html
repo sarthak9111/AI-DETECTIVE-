@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI DETECTIVE</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #080d19;
+    color: white;
+    min-height: 100vh;
+}
+
+header {
+    padding: 25px 7%;
+    border-bottom: 1px solid #202a42;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 30px;
+    font-weight: bold;
+    color: #4d8dff;
+}
+
+.logo span {
+    color: white;
+}
+
+header p {
+    color: #8e9ab5;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 40px auto;
+}
+
+.title {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.title h1 {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.title p {
+    color: #8995b0;
+    font-size: 17px;
+}
+
+.main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.card {
+    background: #10182b;
+    border: 1px solid #253354;
+    border-radius: 20px;
+    padding: 30px;
+}
+
+.card h2 {
+    margin-bottom: 20px;
+}
+
+.upload-area {
+    border: 2px dashed #3d78ff;
+    border-radius: 16px;
+    padding: 55px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.upload-area:hover {
+    background: #14213b;
+}
+
+.upload-icon {
+    font-size: 55px;
+    margin-bottom: 15px;
+}
+
+.upload-area p {
+    color: #8995b0;
+    margin-top: 8px;
+}
+
+input {
+    display: none;
+}
+
+.buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+button {
+    flex: 1;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #3457a5;
+    background: #142343;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1c315d;
+}
+
+.analyze {
+    width: 100%;
+    margin-top: 15px;
+    background: #3975ff;
+    border: none;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.analyze:hover {
+    background: #285fdc;
+}
+
+.preview {
+    display: none;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.preview img {
+    max-width: 100%;
+    max-height: 350px;
+    border-radius: 14px;
+}
+
+.filename {
+    color: #8e9ab5;
+    margin-top: 10px;
+}
+
+.result {
+    display: none;
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.badge {
+    padding: 8px 14px;
+    border-radius: 20px;
+    background: #301c27;
+    color: #ff7182;
+    font-weight: bold;
+}
+
+.confidence {
+    font-size: 45px;
+    font-weight: bold;
+    color: #ff6577;
+    margin-bottom: 5px;
+}
+
+.confidence-label {
+    color: #8995b0;
+    margin-bottom: 20px;
+}
+
+.bar {
+    height: 13px;
+    background: #202c48;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    width: 0%;
+    background: #ff6577;
+    transition: width 1s;
+}
+
+.report {
+    margin-top: 25px;
+    background: #0a101e;
+    border: 1px solid #273453;
+    border-radius: 14px;
+    padding: 20px;
+}
+
+.report-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.report-text {
+    color: #d2d8e6;
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+.signals {
+    margin-top: 20px;
+}
+
+.signal {
+    padding: 12px;
+    margin-top: 8px;
+    background: #151f34;
+    border-radius: 8px;
+    color: #c7d0e3;
+}
+
+.warning {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    background: #181b25;
+    color: #909bb2;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.loading {
+    display: none;
+    text-align: center;
+    padding: 30px;
+}
+
+.spinner {
+    width: 42px;
+    height: 42px;
+    border: 4px solid #253354;
+    border-top: 4px solid #4d8dff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: auto auto 15px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media(max-width: 800px) {
+
+    .main {
+        grid-template-columns: 1fr;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .title h1 {
+        font-size: 32px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+    <div class="logo">
+        🔍 <span>AI</span> DETECTIVE
+    </div>
+
+    <p>AI Media Forensics</p>
+
+</header>
+
+
+<div class="container">
+
+    <div class="title">
+
+        <h1>Is This Image AI Generated?</h1>
+
+        <p>
+            Upload or paste an image and analyze its visual characteristics.
+        </p>
+
+    </div>
+
+
+    <div class="main">
+
+
+        <!-- UPLOAD -->
+
+        <div class="card">
+
+            <h2>📷 Image Input</h2>
+
+            <label class="upload-area" for="fileInput">
+
+                <div class="upload-icon">
+                    ☁️
+                </div>
+
+                <h3>
+                    Click to upload
+                </h3>
+
+                <p>
+                    or drag and drop an image here
+                </p>
+
+                <p>
+                    JPG • PNG • WEBP
+                </p>
+
+            </label>
+
+            <input
+                type="file"
+                id="fileInput"
+                accept="image/*"
+            >
+
+
+            <div class="buttons">
+
+                <button onclick="pasteImage()">
+                    📋 Paste Image
+                </button>
+
+                <button onclick="clearImage()">
+                    🗑️ Clear
+                </button>
+
+            </div>
+
+
+            <div class="preview" id="preview">
+
+                <img id="previewImage">
+
+                <div class="filename" id="filename"></div>
+
+            </div>
+
+
+            <button
+                class="analyze"
+                id="analyzeButton"
+                onclick="analyzeImage()"
+                style="display:none"
+            >
+                🔬 Analyze Image
+            </button>
+
+        </div>
+
+
+        <!-- RESULT -->
+
+        <div class="card">
+
+            <div id="emptyResult">
+
+                <h2>🔬 Analysis</h2>
+
+                <p style="color:#8995b0; margin-top:15px;">
+                    Upload an image and start the analysis.
+                </p>
+
+            </div>
+
+
+            <div class="loading" id="loading">
+
+                <div class="spinner"></div>
+
+                <p>
+                    Examining image characteristics...
+                </p>
+
+            </div>
+
+
+            <div class="result" id="result">
+
+                <div class="result-header">
+
+                    <h2>Analysis Result</h2>
+
+                    <div class="badge">
+                        POSSIBLY AI
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="confidence"
+                    id="confidence"
+                >
+                    87%
+                </div>
+
+                <div class="confidence-label">
+                    Estimated AI-generation probability
+                </div>
+
+
+                <div class="bar">
+
+                    <div
+                        class="bar-fill"
+                        id="barFill"
+                    ></div>
+
+                </div>
+
+
+                <!-- CHATGPT STYLE REPORT -->
+
+                <div class="report">
+
+                    <div class="report-title">
+                        💬 Why does this image look AI-generated?
+                    </div>
+
+                    <div
+                        class="report-text"
+                        id="reportText"
+                    ></div>
+
+                </div>
+
+
+                <div class="signals">
+
+                    <h3>
+                        🔬 Detected Signals
+                    </h3>
+
+
+                    <div class="signal">
+                        ✓ Unusual texture consistency
+                    </div>
+
+                    <div class="signal">
+                        ✓ Fine-detail patterns show statistical anomalies
+                    </div>
+
+                    <div class="signal">
+                        ✓ Lighting/edge patterns require further examination
+                    </div>
+
+                    <div class="signal">
+                        ⚠ Metadata was not used as proof
+                    </div>
+
+                </div>
+
+
+                <div class="warning">
+
+                    ⚠️ <b>Important:</b>
+                    This result is a model prediction, not proof that an
+                    image is AI-generated. AI detectors can produce both
+                    false positives and false negatives.
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let selectedImage = null;
+
+
+/* FILE UPLOAD */
+
+document
+.getElementById("fileInput")
+.addEventListener("change", function(event) {
+
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    loadImage(file);
+
+});
+
+
+/* LOAD IMAGE */
+
+function loadImage(file) {
+
+    selectedImage = file;
+
+    const url = URL.createObjectURL(file);
+
+    document.getElementById("previewImage").src = url;
+
+    document.getElementById("filename").textContent =
+        file.name;
+
+    document.getElementById("preview").style.display =
+        "block";
+
+    document.getElementById("analyzeButton").style.display =
+        "block";
+
+}
+
+
+/* PASTE IMAGE */
+
+async function pasteImage() {
+
+    try {
+
+        const items =
+            await navigator.clipboard.read();
+
+        for (const item of items) {
+
+            for (const type of item.types) {
+
+                if (type.startsWith("image/")) {
+
+                    const blob =
+                        await item.getType(type);
+
+                    const file =
+                        new File(
+                            [blob],
+                            "pasted-image.png",
+                            {
+                                type: type
+                            }
+                        );
+
+                    loadImage(file);
+
+                    return;
+                }
+
+            }
+
+        }
+
+        alert("No image found in clipboard.");
+
+    }
+
+    catch(error) {
+
+        alert(
+            "Your browser blocked clipboard access. " +
+            "Try pressing Ctrl+V while this page is focused."
+        );
+
+    }
+
+}
+
+
+/* ALSO SUPPORT CTRL + V */
+
+document.addEventListener(
+    "paste",
+    function(event) {
+
+        const items =
+            event.clipboardData.items;
+
+        for (const item of items) {
+
+            if (item.type.startsWith("image/")) {
+
+                const file =
+                    item.getAsFile();
+
+                loadImage(file);
+
+                return;
+            }
+
+        }
+
+    }
+);
+
+
+/* ANALYZE */
+
+function analyzeImage() {
+
+    if (!selectedImage) {
+
+        alert("Please upload or paste an image first.");
+
+        return;
+
+    }
+
+
+    document.getElementById("emptyResult")
+        .style.display = "none";
+
+    document.getElementById("result")
+        .style.display = "none";
+
+    document.getElementById("loading")
+        .style.display = "block";
+
+
+    setTimeout(function() {
+
+        document.getElementById("loading")
+            .style.display = "none";
+
+        document.getElementById("result")
+            .style.display = "block";
+
+
+        /*
+            DEMO RESULT
+
+            This will later be replaced by
+            your Python AI model.
+        */
+
+        const probability = 87;
+
+
+        document.getElementById("confidence")
+            .textContent =
+            probability + "%";
+
+
+        setTimeout(function() {
+
+            document.getElementById("barFill")
+                .style.width =
+                probability + "%";
+
+        }, 100);
+
+
+        document.getElementById("reportText")
+            .textContent =
+
+`The image shows several characteristics that can be associated with AI-generated imagery.
+
+The detector found unusually consistent fine textures and patterns in some regions of the image. AI image generators can sometimes produce statistical patterns that differ from those found in photographs captured by cameras.
+
+Some edges and small visual details also show patterns that deserve further examination. These signals contribute to the model's AI-generation estimate.
+
+However, these characteristics are not definitive proof. Image compression, resizing, sharpening, editing, or unusual camera processing can also create similar patterns.
+
+Based on the current analysis, the model estimates that this image has a ${probability}% probability of being AI-generated.
+
+This should be treated as a probabilistic forensic assessment rather than a definitive identification.`;
+
+    }, 2500);
+
+}
+
+
+/* CLEAR */
+
+function clearImage() {
+
+    selectedImage = null;
+
+    document.getElementById("preview")
+        .style.display = "none";
+
+    document.getElementById("analyzeButton")
+        .style.display = "none";
+
+    document.getElementById("result")
+        .style.display = "none";
+
+    document.getElementById("emptyResult")
+        .style.display = "block";
+
+    document.getElementById("fileInput")
+        .value = "";
+
+    document.getElementById("barFill")
+        .style.width = "0%";
+
+}
+
+</script>
+
+</body>
+</html>
